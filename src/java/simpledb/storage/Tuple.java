@@ -1,8 +1,11 @@
 package simpledb.storage;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a
@@ -11,6 +14,11 @@ import java.util.Iterator;
  */
 public class Tuple implements Serializable {
 
+    private TupleDesc tupleDesc;
+    final private List<Field> tupleFields;
+    private RecordId recordId;
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
@@ -22,6 +30,8 @@ public class Tuple implements Serializable {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
+        this.tupleDesc = td;
+        this.tupleFields = new ArrayList<>(td.numFields());
     }
 
     /**
@@ -29,7 +39,7 @@ public class Tuple implements Serializable {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return this.tupleDesc;
     }
 
     /**
@@ -38,7 +48,7 @@ public class Tuple implements Serializable {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return this.recordId;
     }
 
     /**
@@ -49,6 +59,7 @@ public class Tuple implements Serializable {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+        this.recordId = rid;
     }
 
     /**
@@ -61,6 +72,11 @@ public class Tuple implements Serializable {
      */
     public void setField(int i, Field f) {
         // some code goes here
+        if(i >= this.tupleDesc.numFields() || i < 0) throw new ArrayIndexOutOfBoundsException();
+        if(i >= this.tupleFields.size()) this.tupleFields.add(i, f);
+        else this.tupleFields.set(i, f);
+//        this.tupleFields.toArray()[i] = f;
+//        System.out.println(this.tupleFields);
     }
 
     /**
@@ -71,20 +87,21 @@ public class Tuple implements Serializable {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+        if(i >= this.tupleDesc.numFields() || i < 0) return null;
+        else return this.tupleFields.get(i);
     }
 
     /**
      * Returns the contents of this Tuple as a string. Note that to pass the
      * system tests, the format needs to be as follows:
      *
-     * column1\tcolumn2\tcolumn3\t...\tcolumnN
+     * column1\t column2\t column3\t...\t columnN
      *
      * where \t is any whitespace (except a newline)
      */
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        return "TupleFields: " + this.tupleFields;
     }
 
     /**
@@ -94,7 +111,7 @@ public class Tuple implements Serializable {
     public Iterator<Field> fields()
     {
         // some code goes here
-        return null;
+        return this.tupleFields.iterator();
     }
 
     /**
@@ -103,5 +120,7 @@ public class Tuple implements Serializable {
     public void resetTupleDesc(TupleDesc td)
     {
         // some code goes here
+        this.tupleDesc = td;
+        // need to change tupleFields ?
     }
 }

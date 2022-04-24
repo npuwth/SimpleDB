@@ -2,6 +2,7 @@ package simpledb.storage;
 
 import simpledb.common.Type;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
@@ -10,11 +11,16 @@ import java.util.*;
  */
 public class TupleDesc implements Serializable {
 
+    final private List<TDItem> descList;
+
+    final private int fieldNum;
+
     /**
      * A help class to facilitate organizing the information of each field
      * */
     public static class TDItem implements Serializable {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         /**
@@ -44,9 +50,10 @@ public class TupleDesc implements Serializable {
      * */
     public Iterator<TDItem> iterator() {
         // some code goes here
-        return null;
+        return this.descList.iterator();
     }
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
@@ -62,6 +69,14 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
         // some code goes here
+        this.descList = new ArrayList<>(typeAr.length);
+        this.fieldNum = typeAr.length;
+        for(int i = 0; i < typeAr.length; i++) {
+            TDItem item;
+            if(i >= fieldAr.length) item = new TDItem(typeAr[i], "null");
+            else item = new TDItem(typeAr[i], fieldAr[i]);
+            this.descList.add(item);
+        }
     }
 
     /**
@@ -74,6 +89,23 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr) {
         // some code goes here
+        this.descList = new ArrayList<>(typeAr.length);
+        this.fieldNum = typeAr.length;
+        for (Type type : typeAr) {
+            TDItem item = new TDItem(type, "null");
+            this.descList.add(item);
+        }
+    }
+
+    /**
+     * Constructor. Create a new tuple desc with a descList.
+     *
+     * @param descList
+     *            descList of the TupleDesc to be constructed.
+     */
+    public TupleDesc(List<TDItem> descList) {
+        this.descList = descList;
+        this.fieldNum = descList.size();
     }
 
     /**
@@ -81,7 +113,7 @@ public class TupleDesc implements Serializable {
      */
     public int numFields() {
         // some code goes here
-        return 0;
+        return this.fieldNum;
     }
 
     /**
@@ -95,7 +127,8 @@ public class TupleDesc implements Serializable {
      */
     public String getFieldName(int i) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(i >= this.fieldNum || i < 0) throw new NoSuchElementException();
+        return this.descList.get(i).fieldName;
     }
 
     /**
@@ -110,7 +143,8 @@ public class TupleDesc implements Serializable {
      */
     public Type getFieldType(int i) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(i >= this.fieldNum || i < 0) throw new NoSuchElementException();
+        return this.descList.get(i).fieldType;
     }
 
     /**
@@ -124,7 +158,11 @@ public class TupleDesc implements Serializable {
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        if(name == null) throw new NoSuchElementException();
+        for(int i = 0; i < this.fieldNum; i++) {
+            if(name.equals(this.descList.get(i).fieldName)) return i;
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -133,11 +171,15 @@ public class TupleDesc implements Serializable {
      */
     public int getSize() {
         // some code goes here
-        return 0;
+        int size = 0;
+        for(int i = 0; i < this.fieldNum; i++) {
+            size += this.descList.get(i).fieldType.getLen();
+        }
+        return size;
     }
 
     /**
-     * Merge two TupleDescs into one, with td1.numFields + td2.numFields fields,
+     * Merge two TupleDesc s into one, with td1.numFields + td2.numFields fields,
      * with the first td1.numFields coming from td1 and the remaining from td2.
      * 
      * @param td1
@@ -148,12 +190,14 @@ public class TupleDesc implements Serializable {
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
         // some code goes here
-        return null;
+        List<TDItem> newList = new ArrayList<>(td1.descList);
+        newList.addAll(td2.descList);
+        return new TupleDesc(newList);
     }
 
     /**
      * Compares the specified object with this TupleDesc for equality. Two
-     * TupleDescs are considered equal if they have the same number of items
+     * TupleDesc s are considered equal if they have the same number of items
      * and if the i-th type in this TupleDesc is equal to the i-th type in o
      * for every i.
      * 
@@ -164,7 +208,14 @@ public class TupleDesc implements Serializable {
 
     public boolean equals(Object o) {
         // some code goes here
-        return false;
+        if(!(o instanceof TupleDesc)) return false;
+        TupleDesc b = (TupleDesc)o;
+        if(b.fieldNum != this.fieldNum) return false;
+        for(int i = 0; i < this.fieldNum; i++)
+        {
+            if(this.descList.get(i).fieldType != b.descList.get(i).fieldType) return false;
+        }
+        return true;
     }
 
     public int hashCode() {
@@ -182,6 +233,6 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        return "";
+        return "TupleDesc: " + this.descList;
     }
 }
