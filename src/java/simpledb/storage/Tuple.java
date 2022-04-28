@@ -15,7 +15,9 @@ import java.util.List;
 public class Tuple implements Serializable {
 
     private TupleDesc tupleDesc;
-    final private List<Field> tupleFields;
+
+    private final List<Field> tupleFields;
+
     private RecordId recordId;
 
     @Serial

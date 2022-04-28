@@ -23,18 +23,48 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Catalog {
 
+    private static class TableInfo {
+        private final DbFile file;
+        private final String name;
+        private final String pkey;
+
+        public TableInfo(DbFile file, String name, String pkey) {
+            this.file = file;
+            this.name = name;
+            this.pkey = pkey;
+        }
+
+        public DbFile getFile() {
+            return file;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPkey() {
+            return pkey;
+        }
+    }
+
+    private final Map<String, Integer> name2id;
+
+    private final Map<Integer, TableInfo> id2info;
+
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
         // some code goes here
+        this.name2id = new HashMap<>();
+        this.id2info = new HashMap<>();
     }
 
     /**
      * Add a new table to the catalog.
      * This table's contents are stored in the specified DbFile.
-     * @param file the contents of the table to add;  file.getId() is the identfier of
+     * @param file the contents of the table to add;  file.getId() is the identifier of
      *    this file/tupledesc param for the calls getTupleDesc and getFile
      * @param name the name of the table -- may be an empty string.  May not be null.  If a name
      * conflict exists, use the last table to be added as the table for a given name.
@@ -42,6 +72,10 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        int id = file.getId();
+        TableInfo tableInfo = new TableInfo(file, name, pkeyField);
+        this.name2id.put(name, id);
+        this.id2info.put(id, tableInfo);
     }
 
     public void addTable(DbFile file, String name) {
@@ -52,7 +86,7 @@ public class Catalog {
      * Add a new table to the catalog.
      * This table has tuples formatted using the specified TupleDesc and its
      * contents are stored in the specified DbFile.
-     * @param file the contents of the table to add;  file.getId() is the identfier of
+     * @param file the contents of the table to add;  file.getId() is the identifier of
      *    this file/tupledesc param for the calls getTupleDesc and getFile
      */
     public void addTable(DbFile file) {
@@ -65,7 +99,8 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        if(!this.name2id.containsKey(name)) throw new NoSuchElementException();
+        return this.name2id.get(name);
     }
 
     /**
@@ -76,7 +111,8 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(!this.id2info.containsKey(tableid)) throw new NoSuchElementException();
+        return this.id2info.get(tableid).getFile().getTupleDesc();
     }
 
     /**
@@ -87,32 +123,38 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(!this.id2info.containsKey(tableid)) throw new NoSuchElementException();
+        return this.id2info.get(tableid).getFile();
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
-        return null;
+        if(!this.id2info.containsKey(tableid)) throw new NoSuchElementException();
+        return this.id2info.get(tableid).getPkey();
     }
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+        Collection<Integer> ct = this.id2info.keySet();
+        return ct.iterator();
     }
 
-    public String getTableName(int id) {
+    public String getTableName(int tableid) {
         // some code goes here
-        return null;
+        if(!this.id2info.containsKey(tableid)) throw new NoSuchElementException();
+        return this.id2info.get(tableid).getName();
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        this.name2id.clear();
+        this.id2info.clear();
     }
     
     /**
      * Reads the schema from a file and creates the appropriate tables in the database.
-     * @param catalogFile
+     * @param catalogFile The name of the catalogFile on disk to be loaded.
      */
     public void loadSchema(String catalogFile) {
         String line = "";
