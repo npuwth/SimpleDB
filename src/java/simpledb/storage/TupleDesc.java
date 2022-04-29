@@ -209,7 +209,7 @@ public class TupleDesc implements Serializable {
     public boolean equals(Object o) {
         // some code goes here
         if(!(o instanceof TupleDesc)) return false;
-        TupleDesc b = (TupleDesc)o;
+        TupleDesc b = (TupleDesc) o;
         if(b.fieldNum != this.fieldNum) return false;
         for(int i = 0; i < this.fieldNum; i++)
         {
