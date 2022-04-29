@@ -1,5 +1,6 @@
 package simpledb.storage;
 
+import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.common.DbException;
@@ -9,6 +10,8 @@ import simpledb.transaction.TransactionId;
 
 import java.io.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -33,6 +36,10 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
 
+    private static int numPages;
+
+    private final Map<PageId, Page> pageCache;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -40,6 +47,8 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
+        BufferPool.numPages = numPages;
+        this.pageCache = new HashMap<>();
     }
     
     public static int getPageSize() {
@@ -74,7 +83,17 @@ public class BufferPool {
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        if(this.pageCache.containsKey(pid)) return this.pageCache.get(pid);
+        else {
+            if(this.pageCache.size() >= numPages) throw new DbException("Buffer Pool is Full!");
+            else {
+                Catalog cg = Database.getCatalog();
+                DbFile file = cg.getDatabaseFile(pid.getTableId());
+                Page dbPage = file.readPage(pid);
+                this.pageCache.put(pid, dbPage);
+                return dbPage;
+            }
+        }
     }
 
     /**
@@ -168,7 +187,6 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
     }
 
     /** Remove the specific page id from the buffer pool.
