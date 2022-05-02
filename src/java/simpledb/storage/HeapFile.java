@@ -166,6 +166,7 @@ public class HeapFile implements DbFile {
          */
         @Override
         public boolean hasNext() throws DbException, TransactionAbortedException {
+            if(this.pgCursor < 0) return false;
             if(this.tupleIt != null && this.tupleIt.hasNext()) return true;
             else {
                 this.pgCursor++;
@@ -207,7 +208,7 @@ public class HeapFile implements DbFile {
          */
         @Override
         public void close() {
-            this.pgCursor = 0;
+            this.pgCursor = -1;
             this.tupleIt = null;
         }
 
