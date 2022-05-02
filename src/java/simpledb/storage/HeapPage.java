@@ -1,13 +1,14 @@
 package simpledb.storage;
 
+import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Debug;
-import simpledb.common.Catalog;
 import simpledb.transaction.TransactionId;
 
-import java.util.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and 
@@ -73,7 +74,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return (int) Math.floor(Database.getBufferPool().getPageSize()*8.0/(this.td.getSize()*8 + 1));
+        return (int) Math.floor(BufferPool.getPageSize()*8.0/(this.td.getSize()*8 + 1));
     }
 
     /**

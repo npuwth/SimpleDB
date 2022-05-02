@@ -2,17 +2,14 @@ package simpledb.storage;
 
 import simpledb.common.Catalog;
 import simpledb.common.Database;
-import simpledb.common.Permissions;
 import simpledb.common.DbException;
-import simpledb.common.DeadlockException;
+import simpledb.common.Permissions;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
-import java.io.*;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -80,7 +77,7 @@ public class BufferPool {
      * @param pid the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
         // some code goes here
         if(this.pageCache.containsKey(pid)) return this.pageCache.get(pid);
@@ -105,7 +102,7 @@ public class BufferPool {
      * @param tid the ID of the transaction requesting the unlock
      * @param pid the ID of the page to unlock
      */
-    public  void unsafeReleasePage(TransactionId tid, PageId pid) {
+    public void unsafeReleasePage(TransactionId tid, PageId pid) {
         // some code goes here
         // not necessary for lab1|lab2
     }
