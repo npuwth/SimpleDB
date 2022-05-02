@@ -119,7 +119,7 @@ public class SeqScan implements OpIterator {
         TupleDesc td = file.getTupleDesc();
         List<TupleDesc.TDItem> newList = new ArrayList<>();
         for(int i = 0; i < td.numFields(); i++) {
-            String newName = new String(this.tableAlias + '.' + td.getFieldName(i));
+            String newName = this.tableAlias + '.' + td.getFieldName(i);
             TupleDesc.TDItem tmp = new TupleDesc.TDItem(td.getFieldType(i), newName);
             newList.add(tmp);
         }
