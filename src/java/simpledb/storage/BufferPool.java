@@ -88,6 +88,7 @@ public class BufferPool {
                 DbFile file = cg.getDatabaseFile(pid.getTableId());
                 Page dbPage = file.readPage(pid);
                 this.pageCache.put(pid, dbPage);
+//                System.out.println("Current Cache Size is:" + this.pageCache.size());
                 return dbPage;
             }
         }
