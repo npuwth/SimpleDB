@@ -147,7 +147,7 @@ public class HeapFile implements DbFile {
             this.tableId = file.getId();
             this.pageNum = file.numPages();
             this.tupleIt = null;
-            this.pgCursor = 0;
+            this.pgCursor = -1;
         }
 
         /**
