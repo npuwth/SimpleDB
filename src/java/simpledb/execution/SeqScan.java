@@ -100,7 +100,8 @@ public class SeqScan implements OpIterator {
         // some code goes here
         DbFile file = Database.getCatalog().getDatabaseFile(this.tableId);
         this.it = file.iterator(this.tid);
-        this.it.open();
+        assert it != null;
+        it.open();
     }
 
     /**
@@ -139,8 +140,8 @@ public class SeqScan implements OpIterator {
 
     public void close() {
         // some code goes here
-        this.it.close();
-        this.it = null;
+        it.close();
+        it = null;
     }
 
     public void rewind() throws DbException, NoSuchElementException,

@@ -5,6 +5,7 @@ import simpledb.common.DbException;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 
+import java.io.Serial;
 import java.util.NoSuchElementException;
 
 /**
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class Operator implements OpIterator {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public boolean hasNext() throws DbException, TransactionAbortedException {

@@ -2,6 +2,7 @@ package simpledb.storage;
 
 import simpledb.execution.OpIterator;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -11,6 +12,7 @@ public class TupleIterator implements OpIterator {
     /**
 	 * 
 	 */
+    @Serial
     private static final long serialVersionUID = 1L;
     Iterator<Tuple> i = null;
     TupleDesc td = null;
