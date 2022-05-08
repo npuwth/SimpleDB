@@ -27,8 +27,6 @@ public class Aggregate extends Operator {
 
     private final Aggregator.Op aop;
 
-    private final Aggregator ag;
-
     private OpIterator it;
 
     @Serial
@@ -53,20 +51,6 @@ public class Aggregate extends Operator {
         this.afield = afield;
         this.gfield = gfield;
         this.aop = aop;
-        Type gbfieldtype;
-        if(gfield == -1) {
-            gbfieldtype = null;
-        }
-        else {
-            gbfieldtype = child.getTupleDesc().getFieldType(gfield);
-        }
-        Type afieldtype = child.getTupleDesc().getFieldType(afield);
-        if(afieldtype == Type.INT_TYPE) {
-            ag = new IntegerAggregator(gfield, gbfieldtype, afield, aop);
-        }
-        else {
-            ag = new StringAggregator(gfield, gbfieldtype, afield, aop);
-        }
     }
 
     /**
@@ -126,11 +110,27 @@ public class Aggregate extends Operator {
         // some code goes here
         child.open();
         super.open();
+
+        Aggregator ag;
+
+        Type gbfieldtype;
+        if(gfield == -1) { gbfieldtype = null; }
+        else { gbfieldtype = child.getTupleDesc().getFieldType(gfield); }
+
+        Type afieldtype = child.getTupleDesc().getFieldType(afield);
+        if(afieldtype == Type.INT_TYPE) {
+            ag = new IntegerAggregator(gfield, gbfieldtype, afield, aop);
+        }
+        else {
+            ag = new StringAggregator(gfield, gbfieldtype, afield, aop);
+        }
+
         while(child.hasNext()) {
             ag.mergeTupleIntoGroup(child.next());
         }
+
         this.it = ag.iterator();
-        this.it.open();
+        this.it.open(); // once forget to add here, use 2 hours to debug!
     }
 
     /**
@@ -186,6 +186,7 @@ public class Aggregate extends Operator {
         // some code goes here
         child.close();
         super.close();
+        this.it.close();
         this.it = null;
     }
 

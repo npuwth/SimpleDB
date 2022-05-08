@@ -136,9 +136,9 @@ public class TestUtil {
             Tuple expectedTup = expected.next();
             matched = false;
             actual.rewind();
-
+            Tuple next = null;
             while (actual.hasNext()) {
-                Tuple next = actual.next();
+                next = actual.next();
                 if (compareTuples(expectedTup, next)) {
                     matched = true;
                     break;
@@ -146,7 +146,8 @@ public class TestUtil {
             }
 
             if (!matched) {
-                throw new RuntimeException("expected tuple not found: " + expectedTup);
+                System.out.println("here");
+                throw new RuntimeException("expected tuple not found: " + expectedTup + " get: " + next);
             }
         }
     }
