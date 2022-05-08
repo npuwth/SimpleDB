@@ -19,7 +19,7 @@ public class Join extends Operator {
 
     private OpIterator child2;
 
-    private TupleDesc tupleDesc;
+    private final TupleDesc tupleDesc;
 
     private Tuple t1;
 

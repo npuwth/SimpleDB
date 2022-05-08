@@ -6,14 +6,8 @@ import simpledb.common.Permissions;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.io.*;
+import java.util.*;
 
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
@@ -82,11 +76,14 @@ public class HeapFile implements DbFile {
     public Page readPage(PageId pid) {
         // some code goes here
         int index = BufferPool.getPageSize()*pid.getPageNumber();
+//        System.out.println("readPage index:" + index); // debug
         byte[] data = HeapPage.createEmptyPageData();
         try {
             FileInputStream in = new FileInputStream(this.file);
-            assert in.skip(index) == index;
-            assert in.read(data, 0, BufferPool.getPageSize()) == BufferPool.getPageSize();
+            long r1 = in.skip(index);
+            assert r1 == index;
+            int r2 = in.read(data);
+            assert r2 == BufferPool.getPageSize();
             in.close();
             HeapPageId hpid = new HeapPageId(pid.getTableId(), pid.getPageNumber());
             return new HeapPage(hpid, data);

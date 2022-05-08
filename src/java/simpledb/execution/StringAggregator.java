@@ -1,13 +1,32 @@
 package simpledb.execution;
 
 import simpledb.common.Type;
-import simpledb.storage.Tuple;
+import simpledb.storage.*;
+
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Knows how to compute some aggregate over a set of StringFields.
  */
 public class StringAggregator implements Aggregator {
 
+    private final int gbfield;
+
+    private final Type gbfieldtype;
+
+    private final int afield;
+
+    private final Op what;
+
+    private TupleDesc td;
+
+    private final HashMap<Field, Integer> GroupMap;
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
@@ -21,6 +40,12 @@ public class StringAggregator implements Aggregator {
 
     public StringAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
         // some code goes here
+        if(what != Op.COUNT) throw new IllegalArgumentException("Only Count AggregateOp For StringField!");
+        this.gbfield = gbfield;
+        this.gbfieldtype = gbfieldtype;
+        this.afield = afield;
+        this.what = what;
+        this.GroupMap = new HashMap<>();
     }
 
     /**
@@ -29,6 +54,17 @@ public class StringAggregator implements Aggregator {
      */
     public void mergeTupleIntoGroup(Tuple tup) {
         // some code goes here
+        if(td == null) td = tup.getTupleDesc();
+        Field gbField;
+        if(this.gbfield == NO_GROUPING) {
+            gbField = new IntField(0);
+        }
+        else {
+            gbField = tup.getField(this.gbfield);
+            assert gbField.getType() == this.gbfieldtype;
+        }
+        int x = GroupMap.getOrDefault(gbField, 0);
+        GroupMap.put(gbField, x + 1);
     }
 
     /**
@@ -41,7 +77,29 @@ public class StringAggregator implements Aggregator {
      */
     public OpIterator iterator() {
         // some code goes here
-        throw new UnsupportedOperationException("please implement me for lab2");
+        TupleDesc td;
+        ArrayList<Tuple> al = new ArrayList<>();
+        if(this.gbfield == NO_GROUPING) {
+            TupleDesc.TDItem td2 = new TupleDesc.TDItem(Type.INT_TYPE, this.td.getFieldName(afield));
+            td = new TupleDesc(Collections.singletonList(td2));
+            for(Field key : GroupMap.keySet()) {
+                Tuple t = new Tuple(td);
+                t.setField(0, new IntField(GroupMap.get(key)));
+                al.add(t);
+            }
+        }
+        else {
+            TupleDesc.TDItem td1 = new TupleDesc.TDItem(gbfieldtype, this.td.getFieldName(gbfield));
+            TupleDesc.TDItem td2 = new TupleDesc.TDItem(Type.INT_TYPE, this.td.getFieldName(afield));
+            td = new TupleDesc(Arrays.asList(td1, td2));
+            for(Field key : GroupMap.keySet()) {
+                Tuple t = new Tuple(td);
+                t.setField(0, key);
+                t.setField(1, new IntField(GroupMap.get(key)));
+                al.add(t);
+            }
+        }
+        return new TupleIterator(td, al);
     }
 
 }

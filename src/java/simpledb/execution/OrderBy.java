@@ -6,6 +6,7 @@ import simpledb.storage.Field;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -13,6 +14,7 @@ import java.util.*;
  */
 public class OrderBy extends Operator {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     private OpIterator child;
     private final TupleDesc td;

@@ -55,12 +55,14 @@ public class HeapPage implements Page {
         header = new byte[getHeaderSize()];
         for (int i=0; i<header.length; i++)
             header[i] = dis.readByte();
-        
+//        System.out.println("Page Header Size:" + getHeaderSize()); // debug
         tuples = new Tuple[numSlots];
         try{
             // allocate and read the actual records of this page
-            for (int i=0; i<tuples.length; i++)
-                tuples[i] = readNextTuple(dis,i);
+            for (int i=0; i<tuples.length; i++) {
+                tuples[i] = readNextTuple(dis, i);
+//                if(tuples[i] != null) System.out.println(tuples[i].toString()); // debug
+            }
         }catch(NoSuchElementException e){
             e.printStackTrace();
         }
