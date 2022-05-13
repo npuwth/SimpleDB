@@ -156,6 +156,12 @@ public class BufferPool {
         throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
+        DbFile f = Database.getCatalog().getDatabaseFile(tableId);
+        var list = f.insertTuple(tid, t);
+        for (Page p : list) {
+            p.markDirty(true, tid);
+            this.pageCache.put(p.getId(), p);
+        }
     }
 
     /**
@@ -175,6 +181,18 @@ public class BufferPool {
         throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
+//        PageId pid = t.getRecordId().getPageId();
+//        HeapPage pg = (HeapPage) getPage(tid, pid, Permissions.READ_WRITE);
+//        pg.deleteTuple(t);
+//        pg.markDirty(true, tid);
+//        this.pageCache.put(pid, pg);
+        int tableId = t.getRecordId().getPageId().getTableId();
+        DbFile f = Database.getCatalog().getDatabaseFile(tableId);
+        var list = f.deleteTuple(tid, t);
+        for (Page p : list) {
+            p.markDirty(true, tid);
+            this.pageCache.put(p.getId(), p);
+        }
     }
 
     /**
