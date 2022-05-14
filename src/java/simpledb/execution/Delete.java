@@ -71,7 +71,8 @@ public class Delete extends Operator {
      * processed via the buffer pool (which can be accessed via the
      * Database.getBufferPool() method.
      * 
-     * @return A 1-field tuple containing the number of deleted records.
+     * @return A 1-field tuple containing the number of deleted records, or
+     *         null if called more than once.
      * @see Database#getBufferPool
      * @see BufferPool#deleteTuple
      */
@@ -90,6 +91,7 @@ public class Delete extends Operator {
         }
         if(fetched) return null;
         else {
+            fetched = true;
             Tuple rVal = new Tuple(new TupleDesc(new Type[] { Type.INT_TYPE }));
             rVal.setField(0, new IntField(cnt));
             return rVal;
