@@ -1,5 +1,6 @@
 package simpledb.transaction;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -8,7 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TransactionId implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    @Serial
+	private static final long serialVersionUID = 1L;
 
     static final AtomicLong counter = new AtomicLong(0);
     final long myid;

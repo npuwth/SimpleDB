@@ -8,8 +8,6 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -35,7 +33,7 @@ public class BufferPool {
 
     private static int numPages;
 
-    private final Map<PageId, Page> pageCache;
+    private final LRUCache pageCache;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -45,7 +43,7 @@ public class BufferPool {
     public BufferPool(int numPages) {
         // some code goes here
         BufferPool.numPages = numPages;
-        this.pageCache = new HashMap<>();
+        pageCache = new LRUCache();
     }
     
     public static int getPageSize() {
@@ -80,17 +78,15 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
         // some code goes here
-        if(this.pageCache.containsKey(pid)) return this.pageCache.get(pid);
+        Page pg = pageCache.get(pid);
+        if(pg != null) return pg;
         else {
-            if(this.pageCache.size() >= numPages) throw new DbException("Buffer Pool is Full!");
-            else {
-                Catalog cg = Database.getCatalog();
-                DbFile file = cg.getDatabaseFile(pid.getTableId());
-                Page dbPage = file.readPage(pid);
-                this.pageCache.put(pid, dbPage);
-//                System.out.println("Current Cache Size is:" + this.pageCache.size());
-                return dbPage;
-            }
+            if(pageCache.getSize() >= numPages) evictPage();
+            Catalog cg = Database.getCatalog();
+            DbFile file = cg.getDatabaseFile(pid.getTableId());
+            Page dbPage = file.readPage(pid);
+            this.pageCache.put(pid, dbPage);
+            return dbPage;
         }
     }
 
@@ -181,11 +177,6 @@ public class BufferPool {
         throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
-//        PageId pid = t.getRecordId().getPageId();
-//        HeapPage pg = (HeapPage) getPage(tid, pid, Permissions.READ_WRITE);
-//        pg.deleteTuple(t);
-//        pg.markDirty(true, tid);
-//        this.pageCache.put(pid, pg);
         int tableId = t.getRecordId().getPageId().getTableId();
         DbFile f = Database.getCatalog().getDatabaseFile(tableId);
         var list = f.deleteTuple(tid, t);
@@ -203,6 +194,9 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
+        for(PageId p : pageCache.keySet()) {
+            flushPage(p);
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -216,6 +210,7 @@ public class BufferPool {
     public synchronized void discardPage(PageId pid) {
         // some code goes here
         // not necessary for lab1
+        pageCache.remove(pid);
     }
 
     /**
@@ -225,6 +220,18 @@ public class BufferPool {
     private synchronized  void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+        Page pg = pageCache.get(pid);
+        if(pg == null) {
+            System.out.println("Page not in the PageCache!");
+            return;
+        }
+        if(pg.isDirty() != null) {
+            int tableId = pid.getTableId();
+            DbFile f = Database.getCatalog().getDatabaseFile(tableId);
+            f.writePage(pg);
+            pg.markDirty(false, null);
+            pageCache.put(pid, pg);
+        }
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -232,6 +239,12 @@ public class BufferPool {
     public synchronized  void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for lab1|lab2
+        for(PageId p : pageCache.keySet()) {
+            Page pg = pageCache.get(p);
+            if(pg.isDirty().equals(tid)) {
+                flushPage(p);
+            }
+        }
     }
 
     /**
@@ -241,6 +254,13 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        PageId pid = pageCache.eviction();
+        try {
+            flushPage(pid);
+        } catch (Exception e) {
+            throw new DbException("Error occur in flush page!");
+        }
+        discardPage(pid);
     }
 
 }
