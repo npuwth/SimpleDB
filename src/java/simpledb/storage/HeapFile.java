@@ -137,6 +137,7 @@ public class HeapFile implements DbFile {
             HeapPage pg = new HeapPage(pid, HeapPage.createEmptyPageData());
             writePage(pg); // push the specified page to file (on disk)
             pg = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE); // also need to use through BufferPool
+            if(pg == null) throw new DbException("Cannot get the target HeapPage!");
             pg.insertTuple(t);
             al.add(pg);
         }
@@ -246,7 +247,7 @@ public class HeapFile implements DbFile {
         // get the HeapPage's tuple iterator
         private Iterator<Tuple> getTupleIt(int cursor) throws TransactionAbortedException, DbException {
             HeapPageId hpid = new HeapPageId(this.tableId, cursor);
-            HeapPage pg = (HeapPage) Database.getBufferPool().getPage(this.tid, hpid, Permissions.READ_ONLY);
+            HeapPage pg = (HeapPage) Database.getBufferPool().getPage(this.tid, hpid, Permissions.READ_ONLY); // get page through BufferPool
             return pg.iterator();
         }
     }
