@@ -6,13 +6,13 @@ import simpledb.execution.Predicate;
  */
 public class IntHistogram {
 
-    private int min;
+    private final int min;
 
     private int cnt;
 
-    private int width;
+    private final int width;
 
-    private int[] bucket;
+    private final int[] bucket;
 
     /**
      * Create a new IntHistogram.
@@ -32,10 +32,11 @@ public class IntHistogram {
      */
     public IntHistogram(int buckets, int min, int max) {
     	// some code goes here
+        int minBucket = Math.min(buckets, max - min + 1);
         this.min = min;
         this.cnt = 0;
-        this.width = (max - min + 1) / buckets;
-        this.bucket = new int[buckets];
+        this.width = (int) Math.ceil((max - min + 1)*1.0 / minBucket);
+        this.bucket = new int[minBucket];
     }
 
     /**
@@ -63,55 +64,69 @@ public class IntHistogram {
     	// some code goes here
         double result;
         int index = (v - this.min) / this.width;
-        switch(op) {
-            case EQUALS: {
-                result = bucket[index]*1.0 / this.width / this.cnt;
-                break;
+        switch (op) {
+            case EQUALS -> {
+                if (index < 0 || index >= bucket.length) result = 0;
+                else result = bucket[index] * 1.0 / this.width / this.cnt;
             }
-            case LIKE: {
-                result = bucket[index]*1.0 / this.width / this.cnt;
-                break;
+            case LIKE -> {
+                if (index < 0 || index >= bucket.length) result = 0;
+                else result = bucket[index] * 1.0 / this.width / this.cnt;
             }
-            case GREATER_THAN: {
-                result = bucket[index]*1.0*((index+1)*this.width - v) / this.width;
-                for(int i = index + 1; i < bucket.length; i++) {
-                    result += bucket[i];
+            case GREATER_THAN -> {
+                if(index < 0) result = 1;
+                else if(index >= bucket.length) result = 0;
+                else {
+                    result = bucket[index] * 1.0 * ((index + 1) * this.width - v) / this.width;
+                    for (int i = index + 1; i < bucket.length; i++) {
+                        result += bucket[i];
+                    }
+                    result /= this.cnt;
                 }
-                result /= this.cnt;
-                break;
             }
-            case LESS_THAN: {
-                result = bucket[index]*1.0*(v - index*this.width - 1) / this.width;
-                for(int i = index - 1; i >= 0; i--) {
-                    result +=bucket[i];
+            case LESS_THAN -> {
+                if(index < 0) result = 0;
+                else if(index >= bucket.length) result = 1;
+                else {
+                    result = bucket[index] * 1.0 * (v - index * this.width - 1) / this.width;
+                    for (int i = index - 1; i >= 0; i--) {
+                        result += bucket[i];
+                    }
+                    result /= this.cnt;
                 }
-                result /= this.cnt;
-                break;
             }
-            case GREATER_THAN_OR_EQ: {
-                result = bucket[index]*1.0*((index+1)*this.width - v) / this.width
-                        + bucket[index]*1.0 / this.width;
-                for(int i = index + 1; i < bucket.length; i++) {
-                    result += bucket[i];
+            case GREATER_THAN_OR_EQ -> {
+                if(index < 0) result = 1;
+                else if(index >= bucket.length) result = 0;
+                else {
+                    result = bucket[index] * 1.0 * ((index + 1) * this.width - v) / this.width
+                            + bucket[index] * 1.0 / this.width;
+                    for (int i = index + 1; i < bucket.length; i++) {
+                        result += bucket[i];
+                    }
+                    result /= this.cnt;
                 }
-                result /= this.cnt;
-                break;
             }
-            case LESS_THAN_OR_EQ: {
-                result = bucket[index]*1.0*(v - index*this.width - 1) / this.width
-                        + bucket[index]*1.0 / this.width;
-                for(int i = index - 1; i >= 0; i--) {
-                    result +=bucket[i];
+            case LESS_THAN_OR_EQ -> {
+                if(index < 0) result = 0;
+                else if(index >= bucket.length) result = 1;
+                else {
+                    result = bucket[index] * 1.0 * (v - index * this.width - 1) / this.width
+                            + bucket[index] * 1.0 / this.width;
+                    for (int i = index - 1; i >= 0; i--) {
+                        result += bucket[i];
+                    }
+                    result /= this.cnt;
                 }
-                result /= this.cnt;
-                break;
             }
-            case NOT_EQUALS: {
-                result = bucket[index]*1.0 / this.width / this.cnt;
-                result = 1 - result;
-                break;
+            case NOT_EQUALS -> {
+                if(index < 0 || index >= bucket.length) result = 1;
+                else {
+                    result = bucket[index] * 1.0 / this.width / this.cnt;
+                    result = 1 - result;
+                }
             }
-            default: result = -1.0;
+            default -> result = -1.0;
         }
         return result;
     }
