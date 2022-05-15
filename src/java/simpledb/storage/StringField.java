@@ -74,24 +74,27 @@ public class StringField implements Field {
 	 * Compare the specified field to the value of this Field. Return semantics
 	 * are as specified by Field.compare
 	 * 
-	 * @throws IllegalCastException
-	 *             if val is not a StringField
+	 * @throws IllegalArgumentException if val is not a StringField
 	 * @see Field#compare
 	 */
 	public boolean compare(Predicate.Op op, Field val) {
 
+		if(!val.getType().equals(Type.STRING_TYPE)) throw new IllegalArgumentException();
+
 		StringField iVal = (StringField) val;
+
 		int cmpVal = value.compareTo(iVal.value);
 
-		return switch (op) {
-			case EQUALS -> cmpVal == 0;
-			case NOT_EQUALS -> cmpVal != 0;
-			case GREATER_THAN -> cmpVal > 0;
-			case GREATER_THAN_OR_EQ -> cmpVal >= 0;
-			case LESS_THAN -> cmpVal < 0;
-			case LESS_THAN_OR_EQ -> cmpVal <= 0;
-			case LIKE -> value.contains(iVal.value);
-		};
+		switch (op) {
+			case EQUALS: return cmpVal == 0;
+			case NOT_EQUALS: return cmpVal != 0;
+			case GREATER_THAN: return cmpVal > 0;
+			case GREATER_THAN_OR_EQ: return cmpVal >= 0;
+			case LESS_THAN: return cmpVal < 0;
+			case LESS_THAN_OR_EQ: return cmpVal <= 0;
+			case LIKE: return value.contains(iVal.value);
+			default: return false;
+		}
 
 	}
 

@@ -131,14 +131,14 @@ public class IntegerAggregator implements Aggregator {
     }
 
     private int getResult(Statistics st) {
-        return switch (what) {
-            case COUNT -> st.cnt;
-            case SUM -> st.sum;
-            case AVG -> st.sum / st.cnt;
-            case MIN -> st.min;
-            case MAX -> st.max;
-            default -> 0;
-        };
+        switch (what) {
+            case COUNT: return st.cnt;
+            case SUM: return st.sum;
+            case AVG: return st.sum / st.cnt;
+            case MIN: return st.min;
+            case MAX: return st.max;
+            default: return 0;
+        }
     }
 
 }

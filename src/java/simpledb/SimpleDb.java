@@ -12,6 +12,7 @@ public class SimpleDb {
     public static void main (String[] args)
             throws DbException, TransactionAbortedException {
         // convert a file
+//        args = new String[] { "parser", "catalog.txt" }; // debug
         switch (args[0]) {
             case "convert":
                 try {

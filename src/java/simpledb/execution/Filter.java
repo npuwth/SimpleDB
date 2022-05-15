@@ -77,7 +77,7 @@ public class Filter extends Operator {
             TransactionAbortedException, DbException {
         // some code goes here
         while(this.child.hasNext()) {
-            var t = this.child.next();
+            Tuple t = this.child.next();
             if(this.p.filter(t)) return t;
         }
         return null;

@@ -1,6 +1,5 @@
 package simpledb.common;
 
-import simpledb.common.Type;
 import simpledb.storage.DbFile;
 import simpledb.storage.HeapFile;
 import simpledb.storage.TupleDesc;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -168,6 +166,7 @@ public class Catalog {
                 //System.out.println("TABLE NAME: " + name);
                 String fields = line.substring(line.indexOf("(") + 1, line.indexOf(")")).trim();
                 String[] els = fields.split(",");
+//                System.out.println(Arrays.toString(els)); // debug
                 ArrayList<String> names = new ArrayList<>();
                 ArrayList<Type> types = new ArrayList<>();
                 String primaryKey = "";
@@ -191,6 +190,8 @@ public class Catalog {
                         }
                     }
                 }
+//                System.out.println(types); // debug
+//                System.out.println(names); // debug
                 Type[] typeAr = types.toArray(new Type[0]);
                 String[] namesAr = names.toArray(new String[0]);
                 TupleDesc t = new TupleDesc(typeAr, namesAr);

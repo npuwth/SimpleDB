@@ -128,7 +128,7 @@ public class Join extends Operator {
             }
 
             while(child2.hasNext()) {
-                var t2 = child2.next();
+                Tuple t2 = child2.next();
                 if(this.p.filter(t1, t2)) {
                     Tuple tuple = new Tuple(this.tupleDesc);
                     for(int i = 0; i < t1.getTupleDesc().numFields(); i++) {

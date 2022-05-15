@@ -49,21 +49,25 @@ public class IntField implements Field {
      * Compare the specified field to the value of this Field.
      * Return semantics are as specified by Field.compare
      *
-     * @throws IllegalCastException if val is not an IntField
+     * @throws IllegalArgumentException if val is not an IntField
      * @see Field#compare
      */
     public boolean compare(Predicate.Op op, Field val) {
 
+        if(!val.getType().equals(Type.INT_TYPE)) throw new IllegalArgumentException();
+
         IntField iVal = (IntField) val;
 
-        return switch (op) {
-            case EQUALS, LIKE -> value == iVal.value;
-            case NOT_EQUALS -> value != iVal.value;
-            case GREATER_THAN -> value > iVal.value;
-            case GREATER_THAN_OR_EQ -> value >= iVal.value;
-            case LESS_THAN -> value < iVal.value;
-            case LESS_THAN_OR_EQ -> value <= iVal.value;
-        };
+        switch (op) {
+            case EQUALS: return value == iVal.value;
+            case LIKE: return value == iVal.value;
+            case NOT_EQUALS: return value != iVal.value;
+            case GREATER_THAN: return value > iVal.value;
+            case GREATER_THAN_OR_EQ: return value >= iVal.value;
+            case LESS_THAN: return value < iVal.value;
+            case LESS_THAN_OR_EQ: return value <= iVal.value;
+            default: return false;
+        }
 
     }
 

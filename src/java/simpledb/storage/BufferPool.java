@@ -8,6 +8,7 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -153,7 +154,7 @@ public class BufferPool {
         // some code goes here
         // not necessary for lab1
         DbFile f = Database.getCatalog().getDatabaseFile(tableId);
-        var list = f.insertTuple(tid, t);
+        List<Page> list = f.insertTuple(tid, t);
         for (Page p : list) {
             p.markDirty(true, tid);
             this.pageCache.put(p.getId(), p);
@@ -179,7 +180,7 @@ public class BufferPool {
         // not necessary for lab1
         int tableId = t.getRecordId().getPageId().getTableId();
         DbFile f = Database.getCatalog().getDatabaseFile(tableId);
-        var list = f.deleteTuple(tid, t);
+        List<Page> list = f.deleteTuple(tid, t);
         for (Page p : list) {
             p.markDirty(true, tid);
             this.pageCache.put(p.getId(), p);
