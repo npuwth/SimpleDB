@@ -1,6 +1,6 @@
 SimpleDB
 ===========
-A Simple Database System consists of:
+A Simple Database System consisting of:
 - Heap Files (Lab1)
 - Buffer Pool (Lab1-6)
 - Basic Operators (Lab1-2)
