@@ -371,7 +371,7 @@ public class JoinOptimizerTest extends SimpleDbTestBase {
         // we're just doing a heuristics-based optimizer, so, only ignore the
         // really
         // bad case where "hobbies" is the outermost node in the left-deep tree.
-        System.out.println(result.get(0).t1Alias); // debug
+//        System.out.println(result.get(0).t1Alias); // debug
         Assert.assertNotSame("hobbies", result.get(0).t1Alias);
 
         // Also check for some of the other silly cases, like forcing a cross

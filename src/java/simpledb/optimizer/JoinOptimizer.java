@@ -129,7 +129,7 @@ public class JoinOptimizer {
             // HINT: You may need to use the variable "j" if you implemented
             // a join algorithm that's more complicated than a basic
             // nested-loops join.
-            double IOCost = cost1 + card2*cost2;
+            double IOCost = cost1 + card1*cost2; // first have bug here, now fix, use 2hours
             double CPUCost = card1*card2;
             return IOCost + CPUCost;
         }
@@ -260,27 +260,24 @@ public class JoinOptimizer {
             throws ParsingException {
 
         // some code goes here
-        //Replace the following
-        PlanCache pc = new PlanCache();
-        CostCard costCard = null;
+        // Replace the following
+        PlanCache planCache = new PlanCache();
         for(int i = 1; i <= this.joins.size(); i++) {
-            Set<Set<LogicalJoinNode>> st = enumerateSubsets(this.joins, i);
-            for(Set<LogicalJoinNode> plan : st) {
+            Set<Set<LogicalJoinNode>> subSets = enumerateSubsets(this.joins, i); // set of all i-size subset
+            for(Set<LogicalJoinNode> subSet : subSets) { // think about every subSet
                 double minCost = Double.MAX_VALUE;
-                for(LogicalJoinNode removeNode : plan) {
-                    CostCard cc = computeCostAndCardOfSubplan(stats, filterSelectivities, removeNode, plan, minCost, pc);
-                    if(cc != null) {
-                        minCost = cc.cost;
-                        costCard = cc;
+                CostCard costCard = new CostCard();
+                for(LogicalJoinNode removeNode : subSet) { // try remove a node
+                    CostCard plan = computeCostAndCardOfSubplan(stats, filterSelectivities, removeNode, subSet, minCost, planCache);
+                    if(plan != null) { // find a more cost-less plan
+                        minCost = plan.cost;
+                        costCard = plan;
                     }
                 }
-                if (minCost != Double.MAX_VALUE) {
-                    pc.addPlan(plan, minCost, costCard.card, costCard.plan);
-                }
+                planCache.addPlan(subSet, costCard.cost, costCard.card, costCard.plan);
             }
         }
-        if(costCard != null) return costCard.plan;
-        else return joins;
+        return planCache.getOrder(new HashSet<>(this.joins));
     }
 
     // ===================== Private Methods =================================
