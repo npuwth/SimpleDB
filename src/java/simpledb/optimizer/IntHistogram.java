@@ -65,68 +65,75 @@ public class IntHistogram implements Histogram<Integer>{
         double result;
         int index = (v - this.min) / this.width;
         switch (op) {
-            case EQUALS -> {
+            case EQUALS : {
                 if (index < 0 || index >= bucket.length) result = 0;
                 else result = bucket[index] * 1.0 / this.width / this.cnt;
+                break;
             }
-            case LIKE -> {
+            case LIKE : {
                 if (index < 0 || index >= bucket.length) result = 0;
                 else result = bucket[index] * 1.0 / this.width / this.cnt;
+                break;
             }
-            case GREATER_THAN -> {
+            case GREATER_THAN : {
                 if(index < 0) result = 1;
                 else if(index >= bucket.length) result = 0;
                 else {
-                    result = bucket[index] * 1.0 * ((index + 1) * this.width - v) / this.width;
+                    result = bucket[index] * 1.0 * ((index + 1) * this.width + this.min - 1 - v) / this.width;
                     for (int i = index + 1; i < bucket.length; i++) {
                         result += bucket[i];
                     }
                     result /= this.cnt;
                 }
+                break;
             }
-            case LESS_THAN -> {
+            case LESS_THAN : {
                 if(index < 0) result = 0;
                 else if(index >= bucket.length) result = 1;
                 else {
-                    result = bucket[index] * 1.0 * (v - index * this.width - 1) / this.width;
+                    result = bucket[index] * 1.0 * (v - index * this.width - this.min) / this.width;
                     for (int i = index - 1; i >= 0; i--) {
                         result += bucket[i];
                     }
                     result /= this.cnt;
                 }
+                break;
             }
-            case GREATER_THAN_OR_EQ -> {
+            case GREATER_THAN_OR_EQ : {
                 if(index < 0) result = 1;
                 else if(index >= bucket.length) result = 0;
                 else {
-                    result = bucket[index] * 1.0 * ((index + 1) * this.width - v) / this.width
+                    result = bucket[index] * 1.0 * ((index + 1) * this.width + this.min - 1 - v) / this.width
                             + bucket[index] * 1.0 / this.width;
                     for (int i = index + 1; i < bucket.length; i++) {
                         result += bucket[i];
                     }
                     result /= this.cnt;
                 }
+                break;
             }
-            case LESS_THAN_OR_EQ -> {
+            case LESS_THAN_OR_EQ : {
                 if(index < 0) result = 0;
                 else if(index >= bucket.length) result = 1;
                 else {
-                    result = bucket[index] * 1.0 * (v - index * this.width - 1) / this.width
+                    result = bucket[index] * 1.0 * (v - index * this.width - this.min) / this.width
                             + bucket[index] * 1.0 / this.width;
                     for (int i = index - 1; i >= 0; i--) {
                         result += bucket[i];
                     }
                     result /= this.cnt;
                 }
+                break;
             }
-            case NOT_EQUALS -> {
+            case NOT_EQUALS : {
                 if(index < 0 || index >= bucket.length) result = 1;
                 else {
                     result = bucket[index] * 1.0 / this.width / this.cnt;
                     result = 1 - result;
                 }
+                break;
             }
-            default -> result = -1.0;
+            default : result = -1.0;
         }
         return result;
     }
