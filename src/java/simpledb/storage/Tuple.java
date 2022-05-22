@@ -3,7 +3,6 @@ package simpledb.storage;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,9 +82,8 @@ public class Tuple implements Serializable {
 
     /**
      * @return the value of the ith field, or null if it has not been set.
-     *
      * @param i
-     *            field index to return. Must be a valid index.
+     *             index of the field to get. It must be a valid index.
      */
     public Field getField(int i) {
         // some code goes here

@@ -4,7 +4,7 @@ import simpledb.execution.Predicate;
 
 /** A class to represent a fixed-width histogram over a single integer-based field.
  */
-public class IntHistogram {
+public class IntHistogram implements Histogram<Integer>{
 
     private final int min;
 
@@ -43,7 +43,7 @@ public class IntHistogram {
      * Add a value to the set of values that you are keeping a histogram of.
      * @param v Value to add to the histogram
      */
-    public void addValue(int v) {
+    public void addValue(Integer v) {
     	// some code goes here
         int index = (v - this.min) / this.width;
         bucket[index]++;
@@ -60,7 +60,7 @@ public class IntHistogram {
      * @param v Value
      * @return Predicted selectivity of this particular operator and value
      */
-    public double estimateSelectivity(Predicate.Op op, int v) {
+    public double estimateSelectivity(Predicate.Op op, Integer v) {
     	// some code goes here
         double result;
         int index = (v - this.min) / this.width;

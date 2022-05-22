@@ -5,9 +5,8 @@ import simpledb.common.Type;
 import simpledb.execution.Predicate;
 import simpledb.execution.SeqScan;
 import simpledb.storage.*;
-import simpledb.transaction.Transaction;
+import simpledb.transaction.TransactionId;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,6 +67,20 @@ public class TableStats {
      */
     static final int NUM_HIST_BINS = 100;
 
+    private int totalPages;
+
+    private int totalTuples;
+
+    private TupleDesc td;
+
+    private int ioCostPerPage;
+
+    private Histogram[] histograms;
+
+    private int[] minValues;
+
+    private int[] maxValues;
+
     /**
      * Create a new TableStats object, that keeps track of statistics on each
      * column of a table
@@ -87,6 +100,63 @@ public class TableStats {
         // necessarily have to (for example) do everything
         // in a single scan of the table.
         // some code goes here
+        HeapFile table = (HeapFile) Database.getCatalog().getDatabaseFile(tableid);
+        this.totalPages = table.numPages();
+        this.totalTuples = 0;
+        this.td = table.getTupleDesc();
+        this.histograms = new Histogram[td.numFields()];
+        this.minValues = new int[td.numFields()];
+        this.maxValues = new int[td.numFields()];
+        this.ioCostPerPage = ioCostPerPage;
+
+        for(int i = 0; i < td.numFields(); i++) {
+            minValues[i] = Integer.MAX_VALUE;
+            maxValues[i] = Integer.MIN_VALUE;
+        }
+        // SeqScan1 get max and min
+        SeqScan ss1 = new SeqScan(new TransactionId(), tableid);
+        try {
+            ss1.open();
+            while(ss1.hasNext()) {
+                this.totalTuples++;
+                Tuple t = ss1.next();
+                for(int j = 0; j < t.getTupleDesc().numFields(); j++) {
+                    if(t.getTupleDesc().getFieldType(j) == Type.INT_TYPE) {
+                        minValues[j] = Math.min(minValues[j], ((IntField) t.getField(j)).getValue());
+                        maxValues[j] = Math.max(maxValues[j], ((IntField) t.getField(j)).getValue());
+                    }
+                }
+            }
+            ss1.close();
+        } catch (Exception e) {
+            System.out.println("TableStats can not scan1 Table:" + tableid + "!");
+        }
+
+        for(int i = 0; i < td.numFields(); i++) {
+            if(td.getFieldType(i) == Type.INT_TYPE) {
+                histograms[i] = new IntHistogram(NUM_HIST_BINS, minValues[i], maxValues[i]);
+            }
+            else histograms[i] = new StringHistogram(NUM_HIST_BINS);
+        }
+        // SeqScan2 build histogram
+        SeqScan ss2 = new SeqScan(new TransactionId(), tableid);
+        try {
+            ss2.open();
+            while(ss2.hasNext()) {
+                Tuple t = ss2.next();
+                for(int j = 0; j < t.getTupleDesc().numFields(); j++) {
+                    if(t.getTupleDesc().getFieldType(j) == Type.INT_TYPE) {
+                        ((IntHistogram) histograms[j]).addValue(((IntField) t.getField(j)).getValue());
+                    }
+                    else {
+                        ((StringHistogram) histograms[j]).addValue(((StringField) t.getField(j)).getValue());
+                    }
+                }
+            }
+            ss2.close();
+        } catch (Exception e) {
+            System.out.println("TableStats can not scan2 Table:" + tableid + "!");
+        }
     }
 
     /**
@@ -103,7 +173,7 @@ public class TableStats {
      */
     public double estimateScanCost() {
         // some code goes here
-        return 0;
+        return this.totalPages*this.ioCostPerPage;
     }
 
     /**
@@ -117,7 +187,7 @@ public class TableStats {
      */
     public int estimateTableCardinality(double selectivityFactor) {
         // some code goes here
-        return 0;
+        return (int) (this.totalTuples*selectivityFactor);
     }
 
     /**
@@ -150,7 +220,12 @@ public class TableStats {
      */
     public double estimateSelectivity(int field, Predicate.Op op, Field constant) {
         // some code goes here
-        return 1.0;
+        if(td.getFieldType(field) == Type.INT_TYPE) {
+            return ((IntHistogram) histograms[field]).estimateSelectivity(op, ((IntField) constant).getValue());
+        }
+        else{
+            return ((StringHistogram) histograms[field]).estimateSelectivity(op, ((StringField) constant).getValue());
+        }
     }
 
     /**
@@ -158,7 +233,7 @@ public class TableStats {
      * */
     public int totalTuples() {
         // some code goes here
-        return 0;
+        return this.totalTuples;
     }
 
 }
