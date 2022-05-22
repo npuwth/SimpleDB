@@ -1,14 +1,13 @@
 package simpledb.optimizer;
 
-import simpledb.common.Database;
 import simpledb.ParsingException;
+import simpledb.common.Database;
 import simpledb.execution.*;
-import simpledb.storage.TupleDesc;
-
-import java.util.*;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.util.*;
 
 /**
  * The JoinOptimizer class is responsible for ordering a series of joins
@@ -99,7 +98,7 @@ public class JoinOptimizer {
      * The cost of the join should be calculated based on the join algorithm (or
      * algorithms) that you implemented for Lab 2. It should be a function of
      * the amount of data that must be read over the course of the query, as
-     * well as the number of CPU opertions performed by your join. Assume that
+     * well as the number of CPU operations performed by your join. Assume that
      * the cost of a single predicate application is roughly 1.
      * 
      * 
@@ -130,7 +129,9 @@ public class JoinOptimizer {
             // HINT: You may need to use the variable "j" if you implemented
             // a join algorithm that's more complicated than a basic
             // nested-loops join.
-            return -1.0;
+            double IOCost = cost1 + card2*cost2;
+            double CPUCost = card1*card2;
+            return IOCost + CPUCost;
         }
     }
 
@@ -175,7 +176,29 @@ public class JoinOptimizer {
                                                    boolean t2pkey, Map<String, TableStats> stats,
                                                    Map<String, Integer> tableAliasToId) {
         int card = 1;
+        int equalCard = 1;
+        if(t1pkey && t2pkey) equalCard = Math.min(card1, card2);
+        else if(t1pkey) equalCard = card2;
+        else if(t2pkey) equalCard = card1;
+        else equalCard = Math.max(card1, card2);
         // some code goes here
+        switch (joinOp) {
+            case EQUALS: {
+                card = equalCard;
+                break;
+            }
+            case LIKE: {
+                card = equalCard;
+                break;
+            }
+            case NOT_EQUALS: {
+                card = card1*card2 - equalCard;
+                break;
+            }
+            default: {
+                card = card1*card2 / 3;
+            }
+        }
         return card <= 0 ? 1 : card;
     }
 
