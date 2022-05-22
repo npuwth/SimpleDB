@@ -1,15 +1,9 @@
 package simpledb;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import simpledb.common.Database;
-import simpledb.common.DbException;
 import simpledb.common.Utility;
 import simpledb.execution.Predicate;
 import simpledb.optimizer.JoinOptimizer;
@@ -20,8 +14,11 @@ import simpledb.storage.HeapFile;
 import simpledb.storage.HeapFileEncoder;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
-import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class JoinOptimizerTest extends SimpleDbTestBase {
 
@@ -374,6 +371,7 @@ public class JoinOptimizerTest extends SimpleDbTestBase {
         // we're just doing a heuristics-based optimizer, so, only ignore the
         // really
         // bad case where "hobbies" is the outermost node in the left-deep tree.
+        System.out.println(result.get(0).t1Alias); // debug
         Assert.assertNotSame("hobbies", result.get(0).t1Alias);
 
         // Also check for some of the other silly cases, like forcing a cross
