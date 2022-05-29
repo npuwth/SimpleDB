@@ -93,11 +93,12 @@ public class LockManager {
     public synchronized void releaseLock(PageId pid, TransactionId tid) {
         if(lockMap.containsKey(pid)) {
             List<Lock> locks = lockMap.get(pid);
-            for(Lock l: locks) {
+            for(int i = 0; i < locks.size(); i++) { // very strange here
+                Lock l = locks.get(i);
                 if(l.getTid().equals(tid)) locks.remove(l);
             }
             if(locks.size() == 0) lockMap.remove(pid);
-            else lockMap.put(pid, locks);
+            lockMap.put(pid, locks);
         }
     }
 
