@@ -1,8 +1,8 @@
 package simpledb.storage;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LRUCache {
 
@@ -25,7 +25,7 @@ public class LRUCache {
     private final ListNode<PageId, Page> tail;
 
     public LRUCache() {
-        this.cache = new HashMap<>();
+        this.cache = new ConcurrentHashMap<>();
         this.head = new ListNode<>();
         this.tail = new ListNode<>();
         this.head.prev = null;

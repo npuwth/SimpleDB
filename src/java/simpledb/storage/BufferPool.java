@@ -123,7 +123,8 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid) {
         // some code goes here
         // not necessary for lab1|lab2
-        lockManager.releaseAllLocks(tid);
+//        lockManager.releaseAllLocks(tid);
+        transactionComplete(tid, true);
     }
 
     /** Return true if the specified transaction has a lock on the specified page */
@@ -147,12 +148,13 @@ public class BufferPool {
             try {
                 flushPages(tid);
             } catch (Exception e) {
-                System.out.println("Error occur in flush pages!");
+                System.out.println("Error occur when flushing pages!");
             }
         }
         else {
             for(PageId pid: pageCache.keySet()) {
-                if(pageCache.get(pid).isDirty().equals(tid)) discardPage(pid);
+                TransactionId dirtyTid = pageCache.get(pid).isDirty();
+                if(dirtyTid != null && dirtyTid.equals(tid)) discardPage(pid);
                 // after discard, the modified data is lost and next time will get from disk again
             }
         }
@@ -236,6 +238,7 @@ public class BufferPool {
     public synchronized void discardPage(PageId pid) {
         // some code goes here
         // not necessary for lab1
+//        lockManager.releasePage(pid); // release all locks on this page
         pageCache.remove(pid);
     }
 
@@ -262,12 +265,13 @@ public class BufferPool {
 
     /** Write all pages of the specified transaction to disk.
      */
-    public synchronized  void flushPages(TransactionId tid) throws IOException {
+    public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for lab1|lab2
         for(PageId p : pageCache.keySet()) {
             Page pg = pageCache.get(p);
-            if(pg.isDirty().equals(tid)) {
+            TransactionId dirtyTid = pg.isDirty();
+            if(dirtyTid != null && dirtyTid.equals(tid)) {
                 flushPage(p);
             }
         }
@@ -288,13 +292,7 @@ public class BufferPool {
             if(pg.isDirty() == null) break; // find a clean page to evict
         }
         if(id == BufferPool.numPages) throw new DbException("All pages are dirty in BufferPool!");
-        try {
-            lockManager.releasePage(pid); // release all locks on this page
-            flushPage(pid);
-        } catch (Exception e) {
-            throw new DbException("Error occur in flush page!");
-        }
-        discardPage(pid);
+        discardPage(pid); // this page is clean, so discard
     }
 
 }
