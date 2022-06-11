@@ -10,6 +10,7 @@ import simpledb.storage.TupleDesc;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
+import java.io.IOException;
 import java.io.Serial;
 
 /**
@@ -84,7 +85,7 @@ public class Delete extends Operator {
             try {
                 Database.getBufferPool().deleteTuple(tid, t);
                 cnt++;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Cannot delete tuple:" + t.toString() + " with transaction:" + tid + "!");
             }

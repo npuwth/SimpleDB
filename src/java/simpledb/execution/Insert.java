@@ -10,6 +10,7 @@ import simpledb.storage.TupleDesc;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
+import java.io.IOException;
 import java.io.Serial;
 
 /**
@@ -99,7 +100,7 @@ public class Insert extends Operator {
             try {
                 Database.getBufferPool().insertTuple(tid, tableId, t);
                 cnt++;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Cannot insert tuple on table:" + tableId + " with transaction:" + tid + "!");
             }
