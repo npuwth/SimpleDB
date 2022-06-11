@@ -153,6 +153,7 @@ public class BufferPool {
         else {
             for(PageId pid: pageCache.keySet()) {
                 if(pageCache.get(pid).isDirty().equals(tid)) discardPage(pid);
+                // after discard, the modified data is lost and next time will get from disk again
             }
         }
         lockManager.releaseAllLocks(tid);
@@ -279,8 +280,16 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
-        PageId pid = pageCache.eviction();
+        int id;
+        PageId pid = null;
+        for(id = 0; id < BufferPool.numPages; id++) {
+            pid = pageCache.eviction();
+            Page pg = pageCache.get(pid);
+            if(pg.isDirty() == null) break; // find a clean page to evict
+        }
+        if(id == BufferPool.numPages) throw new DbException("All pages are dirty in BufferPool!");
         try {
+            lockManager.releasePage(pid); // release all locks on this page
             flushPage(pid);
         } catch (Exception e) {
             throw new DbException("Error occur in flush page!");

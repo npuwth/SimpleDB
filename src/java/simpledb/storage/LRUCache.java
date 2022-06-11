@@ -83,6 +83,7 @@ public class LRUCache {
 
     public PageId eviction() {
         ListNode<PageId, Page> t = tail.prev;
+//        get(t.key); // this page may be dirty, move to the head
         return t.key;
     }
 

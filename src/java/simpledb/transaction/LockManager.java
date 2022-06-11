@@ -97,7 +97,7 @@ public class LockManager {
                 Lock l = locks.get(i);
                 if(l.getTid().equals(tid)) locks.remove(l);
             }
-            if(locks.size() == 0) lockMap.remove(pid);
+            if(locks.size() == 0) lockMap.remove(pid); // need?
             lockMap.put(pid, locks);
         }
     }
@@ -106,6 +106,10 @@ public class LockManager {
         for(PageId pid: lockMap.keySet()) {
             releaseLock(pid, tid);
         }
+    }
+
+    public synchronized void releasePage(PageId pid) {
+        lockMap.remove(pid);
     }
 
     public synchronized boolean holdsLock(PageId pid, TransactionId tid) {
