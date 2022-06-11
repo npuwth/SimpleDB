@@ -88,6 +88,7 @@ public class BufferPool {
         int timeout = new Random().nextInt(2000) + 1000;
         if(!lockManager.tryAcquireLock(pid, tid, type, timeout))
             throw new TransactionAbortedException();
+//            transactionComplete(tid, false);
         Page pg = pageCache.get(pid);
         if(pg != null) return pg;
         else {
