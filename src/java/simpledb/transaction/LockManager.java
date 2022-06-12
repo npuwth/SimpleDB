@@ -97,14 +97,15 @@ public class LockManager {
                 Lock l = locks.get(i);
                 if(l.getTid().equals(tid)) locks.remove(l);
             }
-            if(locks.size() == 0) lockMap.remove(pid); // need?
-            lockMap.put(pid, locks);
+            if(locks.size() == 0) lockMap.remove(pid);
+            else lockMap.put(pid, locks);
         }
     }
 
     public synchronized void releaseAllLocks(TransactionId tid) {
-        for(PageId pid: lockMap.keySet()) {
-            releaseLock(pid, tid);
+        Object[] pids = lockMap.keySet().toArray(); // must make a copy clone here
+        for(Object pid: pids) {
+            releaseLock((PageId) pid, tid);
         }
     }
 

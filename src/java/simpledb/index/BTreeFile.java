@@ -1,17 +1,17 @@
 package simpledb.index;
 
-import java.io.*;
-import java.util.*;
-
 import simpledb.common.Database;
+import simpledb.common.DbException;
+import simpledb.common.Debug;
 import simpledb.common.Permissions;
 import simpledb.execution.IndexPredicate;
 import simpledb.execution.Predicate.Op;
-import simpledb.common.DbException;
-import simpledb.common.Debug;
 import simpledb.storage.*;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * BTreeFile is an implementation of a DbFile that stores a B+ tree.
@@ -188,7 +188,26 @@ public class BTreeFile implements DbFile {
                                        Field f)
 					throws DbException, TransactionAbortedException {
 		// some code goes here
-        return null;
+		if(pid.pgcateg() == BTreePageId.LEAF) {
+			return (BTreeLeafPage) getPage(tid, dirtypages, pid, perm);
+		} else {
+			BTreeInternalPage bpg = (BTreeInternalPage) getPage(tid, dirtypages, pid, Permissions.READ_ONLY);
+			Iterator<BTreeEntry> it = bpg.iterator();
+			BTreePageId bpid = null;
+			BTreeEntry bet = null;
+			while(it.hasNext()) { // m left child pointers
+				bet = it.next();
+				if(f == null || f.compare(Op.LESS_THAN_OR_EQ, bet.getKey())) {
+					bpid = bet.getLeftChild();
+					break;
+				}
+			}
+			if(bpid == null) { // the m+1 th right child pointer
+				if(bet == null) return null;
+				bpid = bet.getRightChild();
+			}
+			return findLeafPage(tid, dirtypages, bpid, perm, f);
+		}
 	}
 	
 	/**
